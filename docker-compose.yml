@@ -1,22 +1,20 @@
 version: '3.3'
 services:
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.6.0
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
     networks:
       - esnet
-    labels:
-      - "co.elastic.logs/disable=true"
+    #labels:
+    #  - "co.elastic.logs/disable=true"
+
   kibana:
     image: docker.elastic.co/kibana/kibana:6.6.0
     environment:
@@ -32,20 +30,17 @@ services:
       - "co.elastic.logs/disable=true"
   
   filebeat:
-    image: docker.elastic.co/beats/filebeat:6.6.0
-    entrypoint: /usr/local/bin/docker-entrypoint
+    image: docker.elastic.co/beats/filebeat:6.4.0
     command: --strict.perms=false -e
     environment:
-      - setup.kibana.host=kibana:5601
-      - output.elasticsearch.hosts=["elasticsearch:9200"]
+      - "setup.kibana.host=kibana:5601"
+      - "output.elasticsearch.hosts=elasticsearch:9200"
     volumes:
-      - ./filebeat/filebeat.docker.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./filebeat.2.docker.yml:/usr/share/filebeat/filebeat.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    #ports:
-    #  - 5601:5601
-    labels:
-      - "co.elastic.logs/disable=true"
+    #labels:
+    #  - "co.elastic.logs/disable=true"
     depends_on:
       - elasticsearch
       - kibana
@@ -54,14 +49,12 @@ services:
 
   nginx:
     image: nginx
-    volumes:
-      - ./nginx/index.html:/var/www/app/index.html
     ports:
       - 8080:80
-    labels:
-      - "co.elastic.logs/module=nginx"
-      - "co.elastic.logs/fileset.stdout=access"
-      - "co.elastic.logs/fileset.stderr=error"
+    #labels:
+    #  - "co.elastic.logs/module=nginx"
+    #  - "co.elastic.logs/fileset.stdout=access"
+    #  - "co.elastic.logs/fileset.stderr=error"
     networks:
       - esnet
 
