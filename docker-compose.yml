@@ -28,22 +28,43 @@ services:
       - esnet
     labels:
       - "co.elastic.logs/disable=true"
-  
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:6.4.0
-    command: --strict.perms=false -e
+
+  #filebeat:
+  #  image: docker.elastic.co/beats/filebeat:6.4.0
+  #  command: --strict.perms=false -e
+  #  environment:
+  #    - "setup.kibana.host=kibana:5601"
+  #    - "output.elasticsearch.hosts=elasticsearch:9200"
+  #  volumes:
+  #    - ./filebeat.2.docker.yml:/usr/share/filebeat/filebeat.yml:ro
+  #    - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #    - /var/run/docker.sock:/var/run/docker.sock:ro
+  #  #labels:
+  #  #  - "co.elastic.logs/disable=true"
+  #  depends_on:
+  #    - elasticsearch
+  #    - kibana
+  #  networks:
+  #    - esnet
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:6.6.0
+    command: -system.hostfs=/hostfs --strict.perms=false -e
     environment:
       - "setup.kibana.host=kibana:5601"
       - "output.elasticsearch.hosts=elasticsearch:9200"
     volumes:
-      - ./filebeat.2.docker.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro
+    #  - /var/run/docker.sock:/var/run/docker.sock:ro
+    #  - /proc:/hostfs/proc:ro
+    #  - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+    #  - /:/hostfs:ro
     #labels:
     #  - "co.elastic.logs/disable=true"
     depends_on:
       - elasticsearch
       - kibana
+      - nginx 
     networks:
       - esnet
 
@@ -55,6 +76,19 @@ services:
     #  - "co.elastic.logs/module=nginx"
     #  - "co.elastic.logs/fileset.stdout=access"
     #  - "co.elastic.logs/fileset.stderr=error"
+    networks:
+      - esnet
+    volumes:
+      - ./index.php:/var/www/app/index.php
+      - ./vhost.conf:/etc/nginx/conf.d/default.conf
+
+  php:
+    image: php:7.0-fpm
+    working_dir: /var/www/app
+    ports:
+      - 9000:9000
+    volumes:
+      - ./index.php:/var/www/app/index.php
     networks:
       - esnet
 
