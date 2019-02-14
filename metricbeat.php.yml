@@ -10,17 +10,6 @@ metricbeat.config:
 #      hints.enabled: false
 
 metricbeat.modules:
-- module: nginx
-  metricsets: ["stubstatus"]
-  enabled: true
-  period: 10s
-
-  # Nginx hosts
-  hosts: ["http://nginx"]
-
-  # Path to server status. Default server-status
-  server_status_path: "server-status"
-
 - module: php_fpm
   metricsets:
   - pool
@@ -29,7 +18,7 @@ metricbeat.modules:
   period: 10s
   status_path: "/status"
   hosts: ["nginx"]
-  
+
 #- module: docker
 #  metricsets:
 #    - "container"

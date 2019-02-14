@@ -26,41 +26,35 @@ services:
       - elasticsearch
     networks:
       - esnet
-    labels:
-      - "co.elastic.logs/disable=true"
+    #labels:
+    #  - "co.elastic.logs/disable=true"
 
-  #filebeat:
-  #  image: docker.elastic.co/beats/filebeat:6.4.0
-  #  command: --strict.perms=false -e
-  #  environment:
-  #    - "setup.kibana.host=kibana:5601"
-  #    - "output.elasticsearch.hosts=elasticsearch:9200"
-  #  volumes:
-  #    - ./filebeat.2.docker.yml:/usr/share/filebeat/filebeat.yml:ro
-  #    - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  #    - /var/run/docker.sock:/var/run/docker.sock:ro
-  #  #labels:
-  #  #  - "co.elastic.logs/disable=true"
-  #  depends_on:
-  #    - elasticsearch
-  #    - kibana
-  #  networks:
-  #    - esnet
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.4.0
+    command: --strict.perms=false -e
+    environment:
+      - "setup.kibana.host=kibana:5601"
+      - "output.elasticsearch.hosts=elasticsearch:9200"
+    volumes:
+      - ./filebeat.2.docker.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    #labels:
+    #  - "co.elastic.logs/disable=true"
+    depends_on:
+      - elasticsearch
+      - kibana
+    networks:
+      - esnet
 
-  metricbeat:
+  nginx_metricbeat:
     image: docker.elastic.co/beats/metricbeat:6.6.0
-    command: -system.hostfs=/hostfs --strict.perms=false -e
+    command: --strict.perms=false -e
     environment:
       - "setup.kibana.host=kibana:5601"
       - "output.elasticsearch.hosts=elasticsearch:9200"
     volumes:
       - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro
-    #  - /var/run/docker.sock:/var/run/docker.sock:ro
-    #  - /proc:/hostfs/proc:ro
-    #  - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-    #  - /:/hostfs:ro
-    #labels:
-    #  - "co.elastic.logs/disable=true"
     depends_on:
       - elasticsearch
       - kibana
@@ -89,6 +83,7 @@ services:
       - 9000:9000
     volumes:
       - ./index.php:/var/www/app/index.php
+      - ./php-fpm.conf:/usr/local/etc/php-fpm.d/zzz-php-fpm.conf
     networks:
       - esnet
 
